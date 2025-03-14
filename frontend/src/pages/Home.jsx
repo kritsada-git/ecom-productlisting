@@ -34,6 +34,12 @@ const Home = () => {
 
 	const products = items;
 
+
+	let cat_obj = {}
+	categories.forEach(category => {
+		cat_obj[category.id] = category.name;
+	})
+
 	const filteredProducts = products.filter(product => {
 		if (selectedCategory !== 0 && product.category !== selectedCategory) {
 			return false;
@@ -130,7 +136,7 @@ const Home = () => {
 									<div className="product-description">{product.description}</div>
 									<div className="product-footer">
 										<div className="product-category">
-											{product.category} {product.color && `- ${product.color}`}
+											{cat_obj[product.category]}
 										</div>
 										<button className="add-to-cart">Add to Cart</button>
 									</div>
