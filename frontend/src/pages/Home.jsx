@@ -1,46 +1,44 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import './css/Home.css';
+import api from "../api.js";
 
 const Home = () => {
-	const categories = {
-		All: [],
-		Clothing: ["Red", "Blue", "Black"],
-		Electronics: ["White", "Black", "Gray"],
-		Accessories: ["Gold", "Silver", "Rose Gold"],
-	};
+	const [categories, setCategories] = useState([]);
+	const [items, setItems] = useState([]);
 
-	const [selectedCategory, setSelectedCategory] = useState("All");
-	const [selectedColor, setSelectedColor] = useState("");
+	useEffect(() => {
+		api.get("category")
+			.then((response) => {
+				setCategories(prevCategories => [{ id: 0, name: "ALL" }, ...response.data] );
+				// console.log(response.data);
+			})
+			.catch((error) => {
+				console.error("There was an error fetching the products!", error);
+			});
+	}, []);
 
-	// สร้างข้อมูลสินค้าตัวอย่างที่มีข้อมูลเพิ่มเติม
-	const products = Array.from({ length: 20 }, (_, index) => {
-		const id = index + 1;
-		const categoryKeys = Object.keys(categories).filter(cat => cat !== "All");
-		const randomCategory = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+	useEffect(() => {
+		api.get("item")
+			.then((response) => {
+				setItems(response.data);
+				// console.log(response.data);
+			})
+			.catch((error) => {
+				console.error("There was an error fetching the products!", error);
+			});
+	}, []);
+	// console.log(categories)
 
-		let randomColor = "";
-		if (categories[randomCategory].length > 0) {
-			randomColor = categories[randomCategory][Math.floor(Math.random() * categories[randomCategory].length)];
-		}
 
-		return {
-			id: id,
-			name: `Product ${id}`,
-			price: `฿${Math.floor(Math.random() * 10000) + 500}`,
-			description: `This is a short description for product ${id}. It shows some product features.`,
-			category: randomCategory,
-			color: randomColor,
-			image: null // ตั้งค่าเริ่มต้นเป็น null เพราะเรายังไม่มีรูปจริง
-		};
-	});
+	const [selectedCategory, setSelectedCategory] = useState(0);
 
-	// กรองสินค้าตามหมวดหมู่และสีที่เลือก
+	const products = items;
+
 	const filteredProducts = products.filter(product => {
-		if (selectedCategory !== "All" && product.category !== selectedCategory) {
+		if (selectedCategory !== 0 && product.category !== selectedCategory) {
 			return false;
-		}
-		if (selectedColor !== "" && product.color !== selectedColor) {
-			return false;
+		}else if(selectedCategory == 0){
+			return true;
 		}
 		return true;
 	});
@@ -61,41 +59,52 @@ const Home = () => {
 
 					{/* Category Selection */}
 					<div className="row">
-						<div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-							{Object.keys(categories).map((category) => (
-								<button
-									key={category}
-									onClick={() => {
-										setSelectedCategory(category);
-										setSelectedColor(""); // รีเซ็ตสีเมื่อเปลี่ยนหมวดหมู่
-									}}
-									className={selectedCategory === category ? "category-selected" : ""}
-								>
-									{category}
-								</button>
-							))}
+						<div style={{display: "flex", gap: "10px", flexWrap: "wrap"}}>
+
+							{
+								categories.map((cat, index) => (
+										<button key={index}
+										        onClick={() => {
+													setSelectedCategory(cat.id);
+												}}
+										        className={selectedCategory === cat.id ? "category-selected" : ""}
+										>
+											{cat.name}
+										</button>
+								))
+								// 	Object.keys(categories).map((category) => (
+								// 	<button
+								// 		key={category.id}
+								// 		onClick={() => {
+								// 			setSelectedCategory(category);
+								// 		}}
+								// 		className={selectedCategory === category ? "category-selected" : ""}
+								// 	>
+								// 		{category.name}
+								// 	</button>
+								// ))
+							}
 						</div>
 					</div>
 
 					{/* Color Selection */}
-					{selectedCategory !== "All" && categories[selectedCategory].length > 0 && (
-						<div className="row">
-							<div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-								{categories[selectedCategory].map((color) => (
-									<button
-										key={color}
-										onClick={() => setSelectedColor(color)}
-										className={selectedColor === color ? "color-selected" : ""}
-									>
-										{color}
-									</button>
-								))}
-							</div>
-						</div>
-					)}
+					{/*{selectedCategory !== "All" && categories[selectedCategory].length > 0 && (*/}
+					{/*	<div className="row">*/}
+					{/*		<div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>*/}
+					{/*			{categories[selectedCategory].map((color) => (*/}
+					{/*				<button*/}
+					{/*					key={color}*/}
+					{/*					onClick={() => setSelectedColor(color)}*/}
+					{/*					className={selectedColor === color ? "color-selected" : ""}*/}
+					{/*				>*/}
+					{/*					{color}*/}
+					{/*				</button>*/}
+					{/*			))}*/}
+					{/*		</div>*/}
+					{/*	</div>*/}
+					{/*)}*/}
 				</div>
 
-				{/* Product List Header */}
 				<div className="row">
 					<div className="header">
 						<p>Product List {filteredProducts.length > 0 ? `(${filteredProducts.length} items)` : ""}</p>
@@ -105,13 +114,14 @@ const Home = () => {
 				{/* Product Grid */}
 				<div className="row">
 					<div className="product-grid">
-						{filteredProducts.map((product) => (
-							<div key={product.id} className="product-card">
+						{filteredProducts.map((product) => {
+							// console.log("Product:", product)
+							return (<div key={product.id} className="product-card">
 								<div className="product-image">
 									{product.image ? (
-										<img src={product.image} alt={product.name} />
+										<img src='https://cdn.iconscout.com/icon/premium/png-256-thumb/use-item-994788.png?f=webp' alt={product.name} />
 									) : (
-										<span>Product Image</span>
+										<img src='https://cdn.iconscout.com/icon/premium/png-256-thumb/use-item-994788.png?f=webp' alt={product.name}/>
 									)}
 								</div>
 								<div className="product-info">
@@ -125,8 +135,8 @@ const Home = () => {
 										<button className="add-to-cart">Add to Cart</button>
 									</div>
 								</div>
-							</div>
-						))}
+							</div> )
+						})}
 					</div>
 				</div>
 			</div>
