@@ -15,11 +15,6 @@ const PORT = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
-// Test DB Connection
-db.query("SELECT 1")
-	.then(() => console.log("Connected to MySQL"))
-	.catch((err) => console.error("Database Connection Error:", err));
-
 // Routes
 // app.use("/api/auth", authRoutes);
 app.use("/api/category", categoryRoutes);
